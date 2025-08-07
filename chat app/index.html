@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConnectNow - Internal Communication Platform</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background-color: #f8f9fc;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    header {
+      background-color: #2c3e50;
+      color: #fff;
+      padding: 20px 50px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+    }
+
+    nav a {
+      color: #fff;
+      margin-left: 20px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s ease;
+      cursor: pointer;
+    }
+
+    nav a:hover {
+      color: #1abc9c;
+    }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 20px;
+      background: linear-gradient(135deg, #2980b9, #6dd5fa);
+      color: white;
+    }
+
+    .hero h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin-bottom: 30px;
+    }
+
+    .hero button {
+      background-color: #1abc9c;
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .hero button:hover {
+      background-color: #16a085;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+      padding: 50px;
+      background-color: #fff;
+    }
+
+    .feature {
+      background-color: #ecf0f1;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature h3 {
+      margin-bottom: 15px;
+      color: #2c3e50;
+    }
+
+    .feature p {
+      color: #555;
+    }
+
+    footer {
+      background-color: #2c3e50;
+      color: #fff;
+      text-align: center;
+      padding: 15px 20px;
+      margin-top: 20px;
+    }
+
+    footer a {
+      color: #1abc9c;
+      text-decoration: none;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-content h2 {
+      margin-bottom: 15px;
+      color: #2c3e50;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .modal-content button {
+      background-color: #1abc9c;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      width: 100%;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .modal-content button:hover {
+      background-color: #16a085;
+    }
+
+    .close {
+      float: right;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: #e74c3c;
+    }
+
+    .switch-link {
+      display: block;
+      margin-top: 10px;
+      text-align: center;
+      color: #2980b9;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .switch-link:hover {
+      color: #1abc9c;
+    }
+
+    .message {
+      text-align: center;
+      color: green;
+      margin-top: 10px;
+    }
+
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ConnectNow</h1>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#features">Features</a>
+      <a onclick="openModal('loginModal')">Login</a>
+      <a onclick="openModal('signupModal')">Sign Up</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h2>Seamless Communication. Anytime. Anywhere.</h2>
+    <p>ConnectNow empowers teams and organizations with secure messaging, voice, and video calls for a truly collaborative experience.</p>
+    <button onclick="openModal('signupModal')">Get Started</button>
+  </section>
+
+  <section class="features" id="features">
+    <div class="feature">
+      <h3>Secure Messaging</h3>
+      <p>Chat in real-time with end-to-end encryption ensuring privacy and security for all your conversations.</p>
+    </div>
+    <div class="feature">
+      <h3>Voice & Video Calls</h3>
+      <p>Initiate high-quality voice and video calls directly from your device without third-party dependencies.</p>
+    </div>
+    <div class="feature">
+      <h3>Team Collaboration</h3>
+      <p>Create groups, share files, and collaborate effectively within your corporate or educational ecosystem.</p>
+    </div>
+    <div class="feature">
+      <h3>Cross-Platform</h3>
+      <p>Accessible on web, desktop, and mobile for a consistent communication experience everywhere.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2025 ConnectNow. Built for secure internal communication. <a href="mailto:support@connectnow.com">Contact Us</a></p>
+  </footer>
+
+  <!-- LOGIN MODAL -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('loginModal')">&times;</span>
+      <h2>Login to ConnectNow</h2>
+      <input id="loginEmail" type="email" placeholder="Email" />
+      <input id="loginPassword" type="password" placeholder="Password" />
+      <button onclick="login()">Login</button>
+      <span class="switch-link" onclick="switchModal('loginModal', 'signupModal')">Don’t have an account? Sign Up</span>
+      <p id="loginMessage" class="message"></p>
+    </div>
+  </div>
+
+  <!-- SIGNUP MODAL -->
+  <div id="signupModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('signupModal')">&times;</span>
+      <h2>Create Your Account</h2>
+      <input id="signupName" type="text" placeholder="Full Name" />
+      <input id="signupEmail" type="email" placeholder="Email" />
+      <input id="signupPassword" type="password" placeholder="Password" />
+      <button onclick="signup()">Sign Up</button>
+      <span class="switch-link" onclick="switchModal('signupModal', 'loginModal')">Already have an account? Login</span>
+      <p id="signupMessage" class="message"></p>
+    </div>
+  </div>
+
+  <script>
+  const API_URL = "http://localhost:3000/users";
+
+  function openModal(id) {
+    document.getElementById(id).style.display = "block";
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).style.display = "none";
+    document.getElementById("loginMessage").textContent = "";
+    document.getElementById("signupMessage").textContent = "";
+  }
+
+  function switchModal(currentId, targetId) {
+    closeModal(currentId);
+    openModal(targetId);
+  }
+
+  window.onclick = function(event) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    });
+  };
+
+  async function signup() {
+    const name = document.getElementById("signupName").value.trim();
+    const email = document.getElementById("signupEmail").value.trim();
+    const password = document.getElementById("signupPassword").value.trim();
+
+    const msg = document.getElementById("signupMessage");
+    msg.classList.remove("error");
+
+    if (!name || !email || !password) {
+      msg.textContent = "Please fill all fields.";
+      msg.classList.add("error");
+      return;
+    }
+
+    try {
+      const check = await fetch(`${API_URL}?email=${encodeURIComponent(email)}`);
+      const existing = await check.json();
+
+      if (existing.length > 0) {
+        msg.textContent = "User already exists.";
+        msg.classList.add("error");
+        return;
+      }
+
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      const user = await res.json();
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      window.location.href = "chat.html"; // ✅ Make sure chat.html exists
+    } catch (error) {
+      console.error(error);
+      msg.textContent = "Signup failed.";
+      msg.classList.add("error");
+    }
+  }
+
+  async function login() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value.trim();
+
+    const msg = document.getElementById("loginMessage");
+    msg.classList.remove("error");
+
+    if (!email || !password) {
+      msg.textContent = "Please fill all fields.";
+      msg.classList.add("error");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
+      const users = await res.json();
+
+      if (users.length > 0) {
+        localStorage.setItem("currentUser", JSON.stringify(users[0]));
+        window.location.href = "chat.html"; // ✅ Redirect to chat UI
+      } else {
+        msg.textContent = "Invalid email or password.";
+        msg.classList.add("error");
+      }
+    } catch (error) {
+      console.error(error);
+      msg.textContent = "Login failed.";
+      msg.classList.add("error");
+    }
+  }
+</script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+

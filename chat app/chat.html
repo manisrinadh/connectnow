@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ConnectNow - Real-Time Chat</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+      body {
+        display: flex;
+        height: 100vh;
+        background: #ece5dd;
+      }
+      .sidebar {
+        width: 300px;
+        background: #ffffff;
+        border-right: 1px solid #ddd;
+        display: flex;
+        flex-direction: column;
+      }
+      .sidebar-header {
+        background: #075e54;
+        color: white;
+        padding: 15px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .logout-btn {
+        background: #e74c3c;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+      }
+      .search-bar {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+      }
+      .search-bar input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        outline: none;
+      }
+      .user-list {
+        flex: 1;
+        overflow-y: auto;
+      }
+      .user {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f1f1;
+      }
+      .user:hover {
+        background: #f5f5f5;
+      }
+      .user-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .user-info {
+        display: flex;
+        flex-direction: column;
+        max-width: 180px;
+        margin-left: 10px;
+      }
+      .user-name {
+        font-weight: bold;
+      }
+      .last-message {
+        font-size: 0.85rem;
+        color: #666;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .timestamp {
+        font-size: 0.75rem;
+        color: #888;
+      }
+      .unread-badge {
+        background-color: #25d366;
+        color: white;
+        font-size: 0.75rem;
+        border-radius: 50%;
+        padding: 3px 6px;
+        margin-top: 4px;
+        min-width: 20px;
+        text-align: center;
+      }
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .chat-header {
+        background: #075e54;
+        color: white;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .chat-header-info {
+        display: flex;
+        align-items: center;
+      }
+      .chat-header img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+      }
+      .call-btn {
+        background: #25d366;
+        border: none;
+        color: white;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+        cursor: pointer;
+      }
+      .chat-box {
+        flex: 1;
+        padding: 15px;
+        background: #ece5dd;
+        overflow-y: auto;
+      }
+      .message {
+        max-width: 60%;
+        margin: 8px 0;
+        padding: 8px 12px;
+        border-radius: 10px;
+        word-wrap: break-word;
+        font-size: 0.95rem;
+        position: relative;
+      }
+      .sent {
+        background: #dcf8c6;
+        margin-left: auto;
+      }
+      .received {
+        background: #fff;
+        margin-right: auto;
+      }
+      .timestamp {
+        display: block;
+        font-size: 0.75rem;
+        color: #555;
+        margin-top: 5px;
+        text-align: right;
+      }
+      .chat-input {
+        display: flex;
+        border-top: 1px solid #ddd;
+        background: #f0f0f0;
+        padding: 10px;
+      }
+      .chat-input input {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 20px;
+        outline: none;
+        margin-right: 10px;
+      }
+      .chat-input button {
+        background: #25d366;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        font-size: 1.2rem;
+      }
+      .meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        margin-top: 4px;
+      }
+      .timestamp {
+        color: #888;
+      }
+      .status {
+        font-size: 12px;
+        margin-left: 6px;
+      }
+      .sent .status {
+        color: blue;
+      }
+      .received .status {
+        display: none;
+      }
+      .profile-panel {
+        position: absolute;
+        top: 60px;
+        left: 10px;
+        background: white;
+        border: 1px solid #ccc;
+        padding: 15px;
+        border-radius: 10px;
+        width: 260px;
+        z-index: 2000;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        display: none;
+      }
+      .profile-panel input,
+      .profile-panel textarea {
+        width: 100%;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+      }
+      .profile-panel img {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 10px;
+      }
+      .sidebar-header .profile-btn {
+        background: #3498db;
+        border: none;
+        color: #fff;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+        margin-left: auto;
+        margin-right: 8px;
+      }
+      #messageContextMenu button {
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 6px 10px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      #messageContextMenu button:hover {
+        background-color: #f0f0f0;
+      }
+      
+      #remoteAudio {
+        display: none;
+      }
+
+      #callStatus {
+        padding: 6px 15px;
+        font-style: italic;
+        color: #555;
+      }
+      .online-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: transparent;
+  margin-right: 8px;
+}
+
+.online-indicator.active {
+  background-color: green;
+}
+
+
+
+
+    </style>
+  </head>
+  <body>
+    
+  <div class="profile-panel" id="profilePanel">
+    <h4>My Profile</h4>
+    <img
+      id="profileImgPreview"
+      src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+    />
+    <input type="file" id="profilePicInput" accept="image/*" />
+    <input type="text" id="profileNameInput" placeholder="Your name" />
+    <textarea id="profileBioInput" rows="2" placeholder="Bio"></textarea>
+    <button onclick="saveProfile()">Save</button>
+  </div>
+
+  <div class="sidebar">
+    <div class="sidebar-header">
+      ConnectNow
+      <button class="profile-btn" onclick="toggleProfilePanel()">👤</button>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    <div class="search-bar">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search users…"
+        oninput="filterUsers()"
+      />
+    </div>
+
+    <div class="user-list" id="userList">
+    
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="chat-header" id="chatWith">
+      <div class="chat-header-info">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+          alt=""
+          id="chatUserImage"
+        />
+        <span id="chatUserName">Select a user</span>
+      </div>
+      <button class="call-btn" id="callButton" title="Call">📞</button>
+    </div>
+
+    <div id="callStatus"></div>
+
+    <div class="chat-box" id="chatBox"></div>
+    <div
+      id="typingIndicator"
+      style="display: none; font-style: italic; color: gray; margin: 4px 0 8px 0; padding-left: 10px;"
+    >
+      User is typing...
+    </div>
+
+    <div class="chat-input">
+      <button id="emojiBtn" title="Emoji">😊</button>
+      <input type="file" id="fileInput" hidden />
+      <button id="fileBtn" title="Attach file">📎</button>
+      <input type="text" id="messageInput" placeholder="Type a message…" />
+      <button id="sendBtn" title="Send">➔</button>
+    </div>
+    <audio id="remoteAudio" autoplay></audio>
+  </div>
+
+  <div id="messageContextMenu" style="display: none; position: absolute; z-index: 9999; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); padding: 8px; width: 120px;">
+    <button onclick="handleEdit()" style="width: 100%; margin-bottom: 5px">✏️ Edit</button>
+    <button onclick="handleDelete()" style="width: 100%; margin-bottom: 5px">🗑️ Delete</button>
+    <button onclick="closeContextMenu()" style="width: 100%;">❌ Cancel</button>
+  </div>
+
+  <div id="popupBackdrop" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 999;"></div>
+
+  <div id="userProfilePopup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 12px; width: 300px; box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); z-index: 1000;">
+    <span id="closeUserProfile" style="float: right; font-weight: bold; cursor: pointer">✖</span>
+    <div style="text-align: center">
+      <img id="popupUserImage" src="" style="width: 80px; height: 80px; border-radius: 50%" />
+      <h3 id="popupUserName" style="margin-top: 10px"></h3>
+      <p id="popupUserBio" style="color: gray"></p>
+    </div>
+  </div>
+
+  <div id="userProfileOverlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); z-index: 999;"></div>
+
+    <script>
+      const API_USERS = "http://localhost:3000/users";
+      const API_MESSAGES = "http://localhost:3000/messages";
+      const WS_SERVER = "ws://localhost:3001";
+
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+      if (!currentUser || !currentUser.id) {
+        alert("You are not logged in!");
+        window.location.href = "index.html";
+      }
+
+      let selectedUser = null;
+      let allUsers = [];
+      let lastMessages = {};
+      let lastMessageTimestamps = {};
+      let unreadCounts = {};
+      let socket = null;
+      const renderedUsersMap = new Map();
+      const typingUsers = {};
+
+      const userListDiv = document.getElementById("userList");
+      const chatBox = document.getElementById("chatBox");
+      const chatUserName = document.getElementById("chatUserName");
+
+      function getLastSeen(userId) {
+        return localStorage.getItem(`lastSeen_${currentUser.id}_${userId}`);
+      }
+
+      function setLastSeen(userId, timestamp) {
+        localStorage.setItem(`lastSeen_${currentUser.id}_${userId}`, timestamp);
+      }
+      function connectWebSocket() {
+        socket = new WebSocket(WS_SERVER);
+
+        socket.onopen = () => console.log("✅ WebSocket connected!");
+
+        socket.onmessage = (event) => {
+          const msg = JSON.parse(event.data);
+           if (msg.type === "online-users") {
+            console.log("🔍 Updating online users:", msg.users);
+            updateOnlineStatus(msg.users);
+            return;
+          }
+
+          if (msg.type === "typing" && msg.senderId !== currentUser.id) {
+            typingUsers[msg.senderId] = true;
+            if (typingUsers[msg.senderId + "_timeout"]) {
+              clearTimeout(typingUsers[msg.senderId + "_timeout"]);
+            }
+            typingUsers[msg.senderId + "_timeout"] = setTimeout(() => {
+              delete typingUsers[msg.senderId];
+              renderUserList(allUsers);
+            }, 3000);
+            renderUserList(allUsers);
+            return;
+          }
+
+          if (msg.type === "read" && msg.receiverId === currentUser.id) {
+            const otherUserId = msg.senderId;
+            const chatKey = `chat_${currentUser.id}_${otherUserId}`;
+            let messages = JSON.parse(localStorage.getItem(chatKey) || "[]");
+
+            let updated = false;
+            messages.forEach((m) => {
+              if (m.id === msg.messageId && !m.read) {
+                m.read = true;
+                updated = true;
+              }
+            });
+
+            if (updated) {
+              localStorage.setItem(chatKey, JSON.stringify(messages));
+              if (selectedUser && selectedUser.id === otherUserId) {
+                selectUser(selectedUser);
+              }
+            }
+
+            return;
+          }
+          const isMine = msg.senderId === currentUser.id;
+          const otherUserId = isMine ? msg.receiverId : msg.senderId;
+
+          lastMessages[otherUserId] = msg.type === "file" ? "[File]" : msg.text;
+          lastMessageTimestamps[otherUserId] = msg.timestamp;
+
+          const chatKey = `chat_${currentUser.id}_${otherUserId}`;
+          let messages = JSON.parse(localStorage.getItem(chatKey) || "[]");
+          messages.push({ ...msg, read: isMine });
+          localStorage.setItem(chatKey, JSON.stringify(messages));
+
+          if (selectedUser && otherUserId === selectedUser.id) {
+            appendMessage(
+              msg.text,
+              isMine,
+              msg.timestamp,
+              msg.type,
+              msg.filename || null,
+              msg.read || isMine
+            );
+            setLastSeen(otherUserId, msg.timestamp);
+
+            if (!isMine && socket && socket.readyState === WebSocket.OPEN) {
+              socket.send(
+                JSON.stringify({
+                  type: "read",
+                  messageId: msg.id,
+                  senderId: currentUser.id,
+                  receiverId: otherUserId,
+                  timestamp: new Date().toISOString(),
+                })
+              );
+
+              messages = messages.map((m) =>
+                m.timestamp === msg.timestamp ? { ...m, read: true } : m
+              );
+              localStorage.setItem(chatKey, JSON.stringify(messages));
+            }
+          }
+
+          updateUnreadCounts();
+          moveUserToTop(otherUserId);
+          renderUserList(allUsers);
+        };
+
+        socket.onclose = () => {
+          console.log("🔌 WebSocket disconnected. Reconnecting...");
+          setTimeout(connectWebSocket, 1000);
+        };
+
+        socket.onerror = (err) => {
+          console.error("❗ WebSocket error", err);
+        };
+      }
+
+      function updateUnreadCounts() {
+        allUsers.forEach((user) => {
+          const lastSeen = getLastSeen(user.id);
+          const messages = JSON.parse(
+            localStorage.getItem(`chat_${currentUser.id}_${user.id}`) || "[]"
+          );
+          unreadCounts[user.id] = messages.filter(
+            (msg) =>
+              msg.senderId === user.id &&
+              (!lastSeen || new Date(msg.timestamp) > new Date(lastSeen)) &&
+              !msg.read
+          ).length;
+        });
+      }
+
+      async function loadUsers() {
+        try {
+          userListDiv.innerHTML = "";
+
+          const usersRes = await fetch(API_USERS);
+          if (!usersRes.ok) throw new Error("Failed to fetch users");
+          const users = await usersRes.json();
+
+          const messagesRes = await fetch(API_MESSAGES);
+          if (!messagesRes.ok) throw new Error("Failed to fetch messages");
+          const messages = await messagesRes.json();
+
+          console.log("Users fetched:", users);
+          console.log("Current user:", currentUser);
+
+          allUsers = users.filter(
+            (u) => String(u.id) !== String(currentUser.id)
+          );
+
+          allUsers.forEach((user) => {
+            const chatMessages = messages
+              .filter(
+                (msg) =>
+                  (String(msg.senderId) === String(currentUser.id) &&
+                    String(msg.receiverId) === String(user.id)) ||
+                  (String(msg.senderId) === String(user.id) &&
+                    String(msg.receiverId) === String(currentUser.id))
+              )
+              .map((m) => ({
+                ...m,
+                read: m.read || m.senderId === currentUser.id,
+              }));
+
+            if (chatMessages.length > 0) {
+              const lastMsg = chatMessages[chatMessages.length - 1];
+              lastMessages[user.id] =
+                lastMsg.type === "file" ? "[File]" : lastMsg.text;
+              lastMessageTimestamps[user.id] = lastMsg.timestamp;
+            }
+            localStorage.setItem(
+              `chat_${currentUser.id}_${user.id}`,
+              JSON.stringify(chatMessages)
+            );
+          });
+
+          updateUnreadCounts();
+
+          const storedId = localStorage.getItem("selectedChatUserId");
+          if (storedId) {
+            const userToOpen = allUsers.find(
+              (u) => String(u.id) === String(storedId)
+            );
+            if (userToOpen) await selectUser(userToOpen);
+          }
+
+          renderUserList(allUsers);
+        } catch (err) {
+          console.error(err);
+          userListDiv.innerHTML =
+            "<p style='color:red; text-align:center;'>Error loading users</p>";
+        }
+      }
+
+      function renderUserList(users) {
+        users.sort(
+          (a, b) =>
+            new Date(lastMessageTimestamps[b.id] || 0) -
+            new Date(lastMessageTimestamps[a.id] || 0)
+        );
+        userListDiv.innerHTML = "";
+        renderedUsersMap.clear();
+        users.forEach((user) => updateOrCreateUserNode(user));
+      }
+
+      function updateTypingIndicator() {
+        const indicator = document.getElementById("typingIndicator");
+        if (!indicator) return;
+
+        if (selectedUser && typingUsers[selectedUser.id]) {
+          indicator.style.display = "block";
+          indicator.textContent = `${selectedUser.name} is typing…`;
+        } else {
+          indicator.style.display = "none";
+        }
+      }
+
+     function updateOrCreateUserNode(user) {
+  const lastMsg = lastMessages[user.id] || "Start a conversation";
+  const timestamp = lastMessageTimestamps[user.id]
+    ? formatTime(lastMessageTimestamps[user.id])
+    : "";
+  const isSelected = selectedUser && selectedUser.id === user.id;
+  const unreadCount = unreadCounts[user.id] || 0;
+
+  let displayMsg = truncateText(lastMsg, 35);
+  if (typingUsers[user.id]) {
+    displayMsg = "typing…";
+  }
+
+  const isOnline = document.getElementById(`user-${user.id}`)?.classList.contains("online");
+
+  const htmlContent = `
+    <div style="display: flex; align-items: center;">
+     <span class="online-indicator"></span>
+      <img src="${
+        user.image || "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+      }" alt="DP" class="user-avatar" />
+      <div class="user-info">
+        <div class="user-name">${user.name}</div>
+        <div class="last-message">${displayMsg}</div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:flex-end;">
+      ${timestamp ? `<div class="timestamp">${timestamp}</div>` : ""}
+      ${
+        unreadCount > 0
+          ? `<div class="unread-badge">${unreadCount}</div>`
+          : ""
+      }
+    </div>
+  `;
+
+  let existingNode = renderedUsersMap.get(user.id);
+
+  if (existingNode) {
+    existingNode.innerHTML = htmlContent;
+    existingNode.style.background = isSelected ? "#e0f7fa" : "";
+
+    const userNameDiv = existingNode.querySelector(".user-name");
+    const avatar = existingNode.querySelector(".user-avatar");
+
+    if (userNameDiv) {
+      userNameDiv.style.cursor = "pointer";
+      userNameDiv.title = "View profile";
+      userNameDiv.onclick = (e) => {
+        e.stopPropagation();
+        openUserProfile(user);
+      };
+    }
+
+    if (avatar) {
+      avatar.style.cursor = "pointer";
+      avatar.title = "View profile";
+      avatar.onclick = (e) => {
+        e.stopPropagation();
+        openUserProfile(user);
+      };
+    }
+  } else {
+    const div = document.createElement("div");
+    div.className = "user";
+    div.id = `user-${user.id}`; 
+    div.innerHTML = htmlContent;
+    div.style.background = isSelected ? "#e0f7fa" : "";
+
+    div.onclick = async (e) => {
+      e.preventDefault();
+      if (!selectedUser || selectedUser.id !== user.id) {
+        await selectUser(user);
+      }
+    };
+
+    const userNameDiv = div.querySelector(".user-name");
+    const avatar = div.querySelector(".user-avatar");
+
+    if (userNameDiv) {
+      userNameDiv.style.cursor = "pointer";
+      userNameDiv.title = "View profile";
+      userNameDiv.onclick = (e) => {
+        e.stopPropagation();
+        openUserProfile(user);
+      };
+    }
+
+    if (avatar) {
+      avatar.style.cursor = "pointer";
+      avatar.title = "View profile";
+      avatar.onclick = (e) => {
+        e.stopPropagation();
+        openUserProfile(user);
+      };
+    }
+
+    userListDiv.appendChild(div);
+    renderedUsersMap.set(user.id, div);
+  }
+}
+
+      async function selectUser(user) {
+        selectedUser = user;
+        localStorage.setItem("selectedChatUserId", user.id);
+        chatUserName.textContent = user.name;
+
+        const chatUserImage = document.getElementById("chatUserImage");
+        chatUserImage.src =
+          user.image || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+        chatBox.innerHTML = "";
+
+        const chatKey = `chat_${currentUser.id}_${user.id}`;
+        const messages = JSON.parse(localStorage.getItem(chatKey) || "[]");
+
+        let updated = false;
+        messages.forEach((msg) => {
+          const isSender = msg.senderId === currentUser.id;
+          appendMessage(
+            msg.text,
+            isSender,
+            msg.timestamp,
+            msg.type,
+            msg.filename || null,
+            msg.read || false
+          );
+
+          if (!msg.read && msg.senderId === user.id) {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+              socket.send(
+                JSON.stringify({
+                  type: "read",
+                  messageId: msg.id,
+                  senderId: currentUser.id,
+                  receiverId: user.id,
+                  timestamp: new Date().toISOString(),
+                })
+              );
+            }
+            msg.read = true;
+            updated = true;
+          }
+        });
+
+        if (updated) {
+          localStorage.setItem(chatKey, JSON.stringify(messages));
+        }
+
+        const latestTime =
+          messages.length > 0
+            ? messages[messages.length - 1].timestamp
+            : new Date().toISOString();
+        setLastSeen(user.id, latestTime);
+
+        updateUnreadCounts();
+        renderUserList(allUsers);
+        updateTypingIndicator();
+      }
+
+      function appendMessage(
+        content,
+        isSender,
+        timestamp,
+        type = "text",
+        filename = null,
+        read = false
+      ) {
+        const chatBox = document.getElementById("chatBox");
+        const msgDiv = document.createElement("div");
+        msgDiv.className = `message ${isSender ? "sent" : "received"}`;
+        msgDiv.dataset.timestamp = timestamp;
+
+        if (type === "file") {
+          msgDiv.innerHTML = `
+          <a href="${content}" download="${filename}" target="_blank">
+            📎 ${filename}
+          </a>`;
+        } else {
+          msgDiv.textContent = content;
+        }
+
+        const time = document.createElement("div");
+        time.className = "timestamp";
+        time.textContent = new Date(timestamp).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        msgDiv.appendChild(time);
+
+        if (isSender && read) {
+          const readIndicator = document.createElement("span");
+          readIndicator.className = "read-indicator";
+          readIndicator.title = "Read";
+          readIndicator.style.marginLeft = "8px";
+          readIndicator.textContent = "✔✔";
+          msgDiv.appendChild(readIndicator);
+        }
+
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        if (isSender) {
+          msgDiv.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            showMessageContextMenu(
+              e.pageX,
+              e.pageY,
+              msgDiv,
+              timestamp,
+              content,
+              type,
+              filename
+            );
+          });
+        }
+      }
+
+      function showMessageContextMenu(
+        x,
+        y,
+        msgDiv,
+        timestamp,
+        content,
+        type,
+        filename
+      ) {
+        const menu = document.getElementById("messageContextMenu");
+        menu.style.display = "block";
+        menu.style.left = x + "px";
+        menu.style.top = y + "px";
+
+        menu.dataset.timestamp = timestamp;
+        menu.dataset.content = content;
+        menu.dataset.type = type;
+        menu.dataset.filename = filename;
+        menu.dataset.msgDivId = "";
+        if (!msgDiv.id) {
+          msgDiv.id = "msg_" + timestamp.replace(/[:.-]/g, "_");
+        }
+        menu.dataset.msgDivId = msgDiv.id;
+      }
+
+      function closeContextMenu() {
+        const menu = document.getElementById("messageContextMenu");
+        menu.style.display = "none";
+        menu.dataset.timestamp = "";
+        menu.dataset.content = "";
+        menu.dataset.type = "";
+        menu.dataset.filename = "";
+        menu.dataset.msgDivId = "";
+      }
+
+      function handleDelete() {
+        const menu = document.getElementById("messageContextMenu");
+        const timestamp = menu.dataset.timestamp;
+        const msgDivId = menu.dataset.msgDivId;
+
+        if (msgDivId) {
+          const msgDiv = document.getElementById(msgDivId);
+          if (msgDiv) msgDiv.remove();
+        }
+
+        const userId = selectedUser.id;
+        let messages = JSON.parse(
+          localStorage.getItem(`chat_${currentUser.id}_${userId}`) || "[]"
+        );
+        messages = messages.filter((msg) => msg.timestamp !== timestamp);
+        localStorage.setItem(
+          `chat_${currentUser.id}_${userId}`,
+          JSON.stringify(messages)
+        );
+
+        closeContextMenu();
+      }
+      function handleEdit() {
+        const menu = document.getElementById("messageContextMenu");
+        const timestamp = menu.dataset.timestamp;
+        const msgDivId = menu.dataset.msgDivId;
+
+        const msgDiv = document.getElementById(msgDivId);
+        if (!msgDiv) {
+          closeContextMenu();
+          return;
+        }
+
+        const userId = selectedUser.id;
+        let messages = JSON.parse(
+          localStorage.getItem(`chat_${currentUser.id}_${userId}`) || "[]"
+        );
+        const msgIndex = messages.findIndex(
+          (msg) => msg.timestamp === timestamp
+        );
+        if (msgIndex === -1) {
+          closeContextMenu();
+          return;
+        }
+
+        msgDiv.innerHTML = "";
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = messages[msgIndex].text || "";
+        input.style.width = "80%";
+
+        const saveBtn = document.createElement("button");
+        saveBtn.textContent = "Save";
+        saveBtn.style.marginLeft = "5px";
+
+        const cancelBtn = document.createElement("button");
+        cancelBtn.textContent = "Cancel";
+        cancelBtn.style.marginLeft = "5px";
+
+        msgDiv.appendChild(input);
+        msgDiv.appendChild(saveBtn);
+        msgDiv.appendChild(cancelBtn);
+
+        saveBtn.onclick = () => {
+          const newText = input.value.trim();
+          if (!newText) return alert("Message cannot be empty.");
+
+          messages[msgIndex].text = newText;
+          localStorage.setItem(
+            `chat_${currentUser.id}_${userId}`,
+            JSON.stringify(messages)
+          );
+
+          msgDiv.innerHTML = newText;
+          const timeDiv = document.createElement("div");
+          timeDiv.className = "timestamp";
+          timeDiv.textContent = new Date(timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          msgDiv.appendChild(timeDiv);
+
+          closeContextMenu();
+        };
+
+        cancelBtn.onclick = () => {
+          msgDiv.innerHTML = messages[msgIndex].text;
+          const timeDiv = document.createElement("div");
+          timeDiv.className = "timestamp";
+          timeDiv.textContent = new Date(timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          msgDiv.appendChild(timeDiv);
+
+          closeContextMenu();
+        };
+
+        closeContextMenu();
+      }
+
+      document.addEventListener("click", (e) => {
+        const menu = document.getElementById("messageContextMenu");
+        if (menu.style.display === "block" && !menu.contains(e.target)) {
+          closeContextMenu();
+        }
+      });
+
+      function deleteMessage(timestamp) {
+        if (!selectedUser) return;
+
+        const chatKey = `chat_${currentUser.id}_${selectedUser.id}`;
+        const messages = JSON.parse(localStorage.getItem(chatKey) || "[]");
+        const updatedMessages = messages.filter(
+          (msg) => msg.timestamp !== timestamp
+        );
+
+        localStorage.setItem(chatKey, JSON.stringify(updatedMessages));
+
+        selectUser(selectedUser);
+      }
+
+      function sendMessage(fileData = null, fileName = null) {
+        const input = document.getElementById("messageInput");
+        const text = input.value.trim();
+        const isFile = fileData !== null;
+
+        if ((!text && !isFile) || !selectedUser) return;
+
+        const message = {
+          senderId: currentUser.id,
+          receiverId: selectedUser.id,
+          text: isFile ? fileData : text,
+          type: isFile ? "file" : "text",
+          filename: isFile ? fileName : null,
+          timestamp: new Date().toISOString(),
+        };
+
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify(message));
+        }
+
+        fetch(API_MESSAGES, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(message),
+        }).catch((err) => console.error("Failed to save message", err));
+
+        if (!isFile) input.value = "";
+
+        appendMessage(
+          message.text,
+          true,
+          message.timestamp,
+          message.type,
+          message.filename
+        );
+
+        setLastSeen(selectedUser.id, message.timestamp);
+
+        const messages = JSON.parse(
+          localStorage.getItem(`chat_${currentUser.id}_${selectedUser.id}`) ||
+            "[]"
+        );
+        messages.push(message);
+        localStorage.setItem(
+          `chat_${currentUser.id}_${selectedUser.id}`,
+          JSON.stringify(messages)
+        );
+
+        lastMessages[selectedUser.id] = isFile ? "[File]" : text;
+        lastMessageTimestamps[selectedUser.id] = message.timestamp;
+        updateUnreadCounts();
+        moveUserToTop(selectedUser.id);
+        renderUserList(allUsers);
+      }
+
+      function moveUserToTop(userId) {
+        const index = allUsers.findIndex((u) => u.id === userId);
+        if (index > -1) {
+          const user = allUsers.splice(index, 1)[0];
+          allUsers.unshift(user);
+        }
+      }
+
+      function formatTime(isoString) {
+        const date = new Date(isoString);
+        return date.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      function truncateText(text, maxLength) {
+        return text.length > maxLength
+          ? text.slice(0, maxLength) + "..."
+          : text;
+      }
+
+      function startCall() {
+        if (selectedUser) {
+          alert("📞 Starting call with " + selectedUser.name);
+        }
+      }
+
+      function logout() {
+        localStorage.removeItem("currentUser");
+        window.location.href = "index.html";
+      }
+
+      function filterUsers() {
+        const search = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        const filtered = allUsers.filter((user) =>
+          user.name.toLowerCase().includes(search)
+        );
+        renderUserList(filtered);
+      }
+
+      document.getElementById("messageInput").addEventListener("input", () => {
+        if (selectedUser && socket && socket.readyState === WebSocket.OPEN) {
+          socket.send(
+            JSON.stringify({
+              type: "typing",
+              senderId: currentUser.id,
+              receiverId: selectedUser.id,
+            })
+          );
+        }
+      });
+
+      document.getElementById("sendBtn").addEventListener("click", () => {
+        sendMessage();
+      });
+
+      document
+        .getElementById("messageInput")
+        .addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+
+      connectWebSocket();
+      loadUsers();
+      function toggleProfilePanel() {
+        const panel = document.getElementById("profilePanel");
+        panel.style.display =
+          panel.style.display === "block" ? "none" : "block";
+        if (panel.style.display === "block") loadProfile();
+      }
+
+      function saveProfile() {
+        const name = document.getElementById("profileNameInput").value.trim();
+        const bio = document.getElementById("profileBioInput").value.trim();
+        const img = document.getElementById("profileImgPreview").src;
+
+        if (!name) {
+          alert("Name cannot be empty.");
+          return;
+        }
+
+        const updated = { ...currentUser, name, bio, image: img };
+
+        fetch(`${API_USERS}/${currentUser.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updated),
+        })
+          .then(() => {
+            localStorage.setItem("currentUser", JSON.stringify(updated));
+            alert("Profile updated!");
+            toggleProfilePanel();
+            location.reload();
+          })
+          .catch(() => alert("Failed to update profile."));
+      }
+
+      function loadProfile() {
+        document.getElementById("profileNameInput").value =
+          currentUser.name || "";
+        document.getElementById("profileBioInput").value =
+          currentUser.bio || "";
+        document.getElementById("profileImgPreview").src =
+          currentUser.image ||
+          "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+      }
+      document
+        .getElementById("profilePicInput")
+        .addEventListener("change", (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            document.getElementById("profileImgPreview").src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      document.getElementById("fileBtn").addEventListener("click", () => {
+        document.getElementById("fileInput").click();
+      });
+
+      document.getElementById("fileInput").addEventListener("change", () => {
+        const file = document.getElementById("fileInput").files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            sendMessage(reader.result, file.name);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+      document.getElementById("emojiBtn").addEventListener("click", () => {
+        toggleEmojiPicker();
+      });
+      function openUserProfile(user) {
+        const popup = document.getElementById("userProfilePopup");
+        const backdrop = document.getElementById("popupBackdrop");
+
+        if (!popup || !backdrop) return;
+
+        document.getElementById("popupUserImage").src =
+          user.image || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+        document.getElementById("popupUserName").textContent =
+          user.name || "No name";
+        document.getElementById("popupUserBio").textContent =
+          user.bio || "No bio available";
+
+        popup.style.display = "block";
+        backdrop.style.display = "block";
+      }
+
+      document
+        .getElementById("closeUserProfile")
+        ?.addEventListener("click", () => {
+          document
+            .getElementById("userProfilePopup")
+            ?.style.setProperty("display", "none");
+          document
+            .getElementById("popupBackdrop")
+            ?.style.setProperty("display", "none");
+        });
+
+      document
+        .getElementById("popupBackdrop")
+        ?.addEventListener("click", () => {
+          document
+            .getElementById("userProfilePopup")
+            ?.style.setProperty("display", "none");
+          document
+            .getElementById("popupBackdrop")
+            ?.style.setProperty("display", "none");
+        });
+
+      function toggleEmojiPicker() {
+        let picker = document.getElementById("emojiPicker");
+        if (!picker) {
+          picker = document.createElement("div");
+          picker.id = "emojiPicker";
+          picker.style.position = "absolute";
+          picker.style.bottom = "60px";
+          picker.style.right = "80px";
+          picker.style.background = "#fff";
+          picker.style.border = "1px solid #ccc";
+          picker.style.padding = "10px";
+          picker.style.borderRadius = "8px";
+          picker.style.boxShadow = "0 0 10px rgba(0,0,0,0.1)";
+          picker.innerHTML = "😀 😁 😂 🤣 😊 😎 😍 😘 😜 🤪 🤩 😤 😭 😡";
+
+          picker.addEventListener("click", (e) => {
+            const emoji = e.target.textContent;
+            document.getElementById("messageInput").value += emoji;
+          });
+
+          document.body.appendChild(picker);
+        } else {
+          picker.remove();
+        }
+      }
+
+      let peerConnection = null;
+      let localStream = null;
+
+      async function startCall() {
+        if (!selectedUser) {
+          alert("Select a user to start call.");
+          return;
+        }
+
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+          alert("Not connected to signaling server.");
+          return;
+        }
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: false,
+          });
+        } catch (err) {
+          alert("Microphone permission denied.");
+          return;
+        }
+
+        createPeerConnection();
+
+        localStream
+          .getTracks()
+          .forEach((track) => peerConnection.addTrack(track, localStream));
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+
+        socket.send(
+          JSON.stringify({
+            type: "offer",
+            offer: offer,
+            senderId: currentUser.id,
+            receiverId: selectedUser.id,
+          })
+        );
+
+        logCallStatus("Calling " + selectedUser.name + "...");
+      }
+
+      function createPeerConnection() {
+        if (peerConnection) {
+          peerConnection.close();
+        }
+
+        peerConnection = new RTCPeerConnection({
+          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+        });
+
+        peerConnection.onicecandidate = (event) => {
+          if (event.candidate) {
+            socket.send(
+              JSON.stringify({
+                type: "candidate",
+                candidate: event.candidate,
+                senderId: currentUser.id,
+                receiverId: selectedUser.id,
+              })
+            );
+          }
+        };
+
+        peerConnection.ontrack = (event) => {
+          let remoteAudioElem = document.getElementById("remoteAudio");
+          if (!remoteAudioElem) {
+            remoteAudioElem = document.createElement("audio");
+            remoteAudioElem.id = "remoteAudio";
+            remoteAudioElem.autoplay = true;
+            document.body.appendChild(remoteAudioElem);
+          }
+          remoteAudioElem.srcObject = event.streams[0];
+        };
+
+        peerConnection.onconnectionstatechange = () => {
+          if (
+            ["disconnected", "failed", "closed"].includes(
+              peerConnection.connectionState
+            )
+          ) {
+            endCall();
+          }
+        };
+      }
+
+      socket.addEventListener("message", async (event) => {
+        const msg = JSON.parse(event.data);
+
+        if (!msg.type) return;
+
+        switch (msg.type) {
+          case "offer":
+            if (msg.receiverId !== currentUser.id) return;
+            await handleOffer(msg.offer, msg.senderId);
+            break;
+          case "answer":
+            if (msg.receiverId !== currentUser.id) return;
+            await handleAnswer(msg.answer);
+            break;
+          case "candidate":
+            if (msg.receiverId !== currentUser.id) return;
+            if (peerConnection && msg.candidate) {
+              await peerConnection.addIceCandidate(msg.candidate).catch((e) => {
+                console.error("Error adding ICE candidate", e);
+              });
+            }
+            break;
+          case "hangup":
+            if (msg.receiverId === currentUser.id) {
+              endCall();
+              alert(
+                (selectedUser ? selectedUser.name : "Peer") +
+                  " hung up the call."
+              );
+            }
+            break;
+        }
+      });
+
+      async function handleOffer(offerDesc, callerId) {
+        if (callerId !== selectedUser?.id) {
+          alert(`Incoming call from userId: ${callerId}`);
+        }
+
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: false,
+          });
+        } catch (err) {
+          alert("Microphone permission denied.");
+          return;
+        }
+
+        createPeerConnection();
+        localStream
+          .getTracks()
+          .forEach((track) => peerConnection.addTrack(track, localStream));
+
+        await peerConnection.setRemoteDescription(
+          new RTCSessionDescription(offerDesc)
+        );
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+
+        socket.send(
+          JSON.stringify({
+            type: "answer",
+            answer,
+            senderId: currentUser.id,
+            receiverId: callerId,
+          })
+        );
+
+        logCallStatus(`Call received from ${selectedUser?.name || callerId}`);
+      }
+
+      async function handleAnswer(answerDesc) {
+        if (!peerConnection) return;
+        await peerConnection.setRemoteDescription(
+          new RTCSessionDescription(answerDesc)
+        );
+        logCallStatus("Call established");
+      }
+
+      function endCall() {
+        if (peerConnection) {
+          peerConnection.close();
+          peerConnection = null;
+        }
+        if (localStream) {
+          localStream.getTracks().forEach((track) => track.stop());
+          localStream = null;
+        }
+        const remoteAudioElem = document.getElementById("remoteAudio");
+        if (remoteAudioElem) remoteAudioElem.srcObject = null;
+
+        logCallStatus("Call ended");
+      }
+
+      function hangupCall() {
+        if (socket && socket.readyState === WebSocket.OPEN && selectedUser) {
+          socket.send(
+            JSON.stringify({
+              type: "hangup",
+              senderId: currentUser.id,
+              receiverId: selectedUser.id,
+            })
+          );
+        }
+        endCall();
+      }
+
+      function logCallStatus(message) {
+        console.log("[Call] " + message);
+      }
+
+      document.querySelector(".call-btn").onclick = () => {
+        if (peerConnection) {
+          hangupCall();
+        } else {
+          startCall();
+        }
+      }
+function updateOnlineStatus(onlineUserIds) {
+  allUsers.forEach(user => {
+    const userElement = document.getElementById(`user-${user.id}`);
+    if (userElement) {
+      const indicator = userElement.querySelector(".online-indicator");
+      if (indicator) {
+        const isOnline = onlineUserIds.includes(String(user.id));
+        indicator.classList.toggle("active", isOnline);
+      }
+    }
+  });
+}
+
+
+
+
+
+    </script>
+  </body>
+</html>
